@@ -152,15 +152,15 @@ def main():
     ax.yaxis.set_major_formatter(StrMethodFormatter('{x:,.0f}'))
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-        ax.set_xlabel('')
+    ax.set_xlabel('')
 
     if len(y_hist):
         ax.annotate('History (2024)', xy=(y_hist.index[-1], y_hist.values[-1]), xytext=(6,0), textcoords='offset points', fontsize=9, va='center', ha='left', color='#666666')
     if len(y_act):
-        ax.annotate('Actual (Jan–Aug 2025)', xy=(y_act.index[-1], y_act.values[-1]), xytext=(6,0), textcoords='offset points', fontsize=9, va='center', ha='left', color='#444444')
+        ax.annotate('Actual (Jan-Aug 2025)', xy=(y_act.index[-1], y_act.values[-1]), xytext=(6,0), textcoords='offset points', fontsize=9, va='center', ha='left', color='#444444')
     ax.annotate('Moirai', xy=(fc.index[-1], fc.values[-1]), xytext=(6,0), textcoords='offset points', fontsize=9, va='center', ha='left', color='#000000')
 
-    ax.set_title('EIA Net Generation — Moirai forecast Jan–Aug 2025')
+    ax.set_title('EIA Net Generation — Moirai forecast Jan-Aug 2025')
     save_fig('eia_moirai_last_fold.png')
 
 if __name__ == '__main__':
