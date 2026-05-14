@@ -228,9 +228,7 @@ results['Moirai'] = {
 
 # Create comparison table
 comparison_df = pd.DataFrame(results).T
-logger.info("\n" + "="*60)
-logger.info("MODEL COMPARISON")
-logger.info("="*60)
+logger.info("=== MODEL COMPARISON ===")
 logger.info(comparison_df.round(4))
 
 # Create comparison plot
