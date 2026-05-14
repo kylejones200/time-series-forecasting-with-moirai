@@ -99,7 +99,6 @@ def forecast_timegpt(ts_data, horizon=24, api_key=None):
 
 from chronos import ChronosPipeline
 import torch
-import time
 
 def forecast_chronos(ts_data, horizon=24, model_size='tiny'):
     """
@@ -153,7 +152,6 @@ logger.info(f"Chronos forecast range: {chronos_results['forecast'].min():.2f} to
 # Install: pip install moirai
 
 from moirai import MoiraiForecaster
-import time
 
 def forecast_moirai(ts_data, horizon=24, model_size='base'):
     """

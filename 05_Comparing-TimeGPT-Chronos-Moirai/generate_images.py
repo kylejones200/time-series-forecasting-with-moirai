@@ -53,7 +53,6 @@ images_dir = Path("images")
 images_dir.mkdir(exist_ok=True)
 
 # Update all savefig calls to use images_dir
-import matplotlib.pyplot as plt
 original_savefig = plt.savefig
 
 def savefig_tufte(filename, **kwargs):
@@ -68,10 +67,6 @@ plt.savefig = savefig_tufte
 # Code blocks from article
 
 # Code block 1
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from pathlib import Path
 
 plt.rcParams.update({
     'font.family': 'serif',
@@ -202,7 +197,6 @@ def forecast_timegpt(ts_data, horizon=24, api_key=None):
 
 from chronos import ChronosPipeline
 import torch
-import time
 
 def forecast_chronos(ts_data, horizon=24, model_size='tiny'):
     """
@@ -257,7 +251,6 @@ logger.info(f"Chronos forecast range: {chronos_results['forecast'].min():.2f} to
 # Install: pip install moirai
 
 from moirai import MoiraiForecaster
-import time
 
 def forecast_moirai(ts_data, horizon=24, model_size='base'):
     """
