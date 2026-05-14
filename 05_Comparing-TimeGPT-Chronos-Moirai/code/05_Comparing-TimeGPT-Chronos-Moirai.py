@@ -1,3 +1,4 @@
+import signalplot
 import logging
 
 logger = logging.getLogger(__name__)
@@ -8,12 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-plt.rcParams.update({
-    'axes.grid': False,
-    'font.family': 'serif',
-    'axes.spines.top': False,
-    'axes.spines.right': False
-})
+signalplot.apply(font_family='serif')
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 

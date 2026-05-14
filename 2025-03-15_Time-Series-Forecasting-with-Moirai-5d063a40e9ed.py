@@ -10,6 +10,7 @@ from gluonts.dataset.split import split
 from pathlib import Path
 from uni2ts.eval_util.plot import plot_single
 from uni2ts.model.moirai import MoiraiForecast, MoiraiModule
+import signalplot
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -70,11 +71,8 @@ plt.show()
 
 
 np.random.seed(42)
-plt.rcParams.update({
-    'axes.grid': False,'font.family': 'serif','axes.spines.top': False,'axes.spines.right': False,'axes.linewidth': 0.8})
+signalplot.apply(font_family='serif')
 
-def save_fig(path: str):
-    plt.tight_layout(); plt.savefig(path, bbox_inches='tight'); plt.close()
 
 @dataclass
 class Config:
@@ -162,7 +160,7 @@ def main(plot: bool = False):
         ax.annotate('Moirai', xy=(fc.index[-1], fc.values[-1]), xytext=(6,0), textcoords='offset points', fontsize=9, va='center', ha='left', color='#000000')
 
         ax.set_title('EIA Net Generation — Moirai forecast Jan-Aug 2025')
-        save_fig('eia_moirai_last_fold.png')
+        signalplot.save('eia_moirai_last_fold.png')
 
 if __name__ == '__main__':
     main()
