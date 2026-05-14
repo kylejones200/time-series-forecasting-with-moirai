@@ -1,7 +1,7 @@
 # Time Series Forecasting with Moirai Moirai is a time series language model from Salesforce. Named for the
 three fates who control destiny, it is easy-to-use and fast (wall...
 
-### **Time Series Forecasting with Moirai (an LLM transformer)** 
+### Time Series Forecasting with Moirai (an LLM transformer)
 
 Moirai is a time series language model from Salesforce. Named for the three fates who control destiny, it is easy-to-use and fast (wall time was 1.7 seconds for this to make the predictions below). Moirai is a Masked Encoder-based Universal Time Series Forecasting Transformer trained on the Large-scale Open Time Series Archive (LOTSA) \[27 billion observations across nine domains\].
 
