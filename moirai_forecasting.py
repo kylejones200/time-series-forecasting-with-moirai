@@ -1,6 +1,5 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import torch
 from gluonts.dataset.pandas import PandasDataset
 from gluonts.dataset.split import split
 from uni2ts.model.moirai import MoiraiForecast, MoiraiModule

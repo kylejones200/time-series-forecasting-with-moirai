@@ -2,8 +2,6 @@
 
 import pandas as pd
 from pathlib import Path
-from typing import Tuple
-import torch
 from gluonts.dataset.pandas import PandasDataset
 from gluonts.dataset.split import split
 from uni2ts.model.moirai import MoiraiForecast, MoiraiModule
@@ -26,7 +24,7 @@ def create_dataset(df: pd.DataFrame, value_column: str) -> PandasDataset:
     """Convert DataFrame to GluonTS PandasDataset."""
     return PandasDataset(dict(df[[value_column]]))
 
-def split_dataset(dataset: PandasDataset, test_size: int) -> Tuple:
+def split_dataset(dataset: PandasDataset, test_size: int) -> tuple:
     """Split dataset into train and test."""
     train, test_template = split(dataset, offset=-test_size)
     test_data = test_template.generate_instances(
