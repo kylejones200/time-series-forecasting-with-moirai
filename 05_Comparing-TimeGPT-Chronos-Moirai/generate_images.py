@@ -17,14 +17,6 @@ import numpy as np
 import pandas as pd
 
 # Set random seeds
-try:
-    import tensorflow as tf
-
-    tf.random.set_seed(42)
-except ImportError:
-    tf = None
-except Exception:
-    tf = None
 
 # Tufte-style configuration
 signalplot.apply(font_family="serif")
@@ -181,7 +173,7 @@ def forecast_chronos(ts_data, horizon=24, model_size="tiny"):
     start_time = time.time()
 
     # Forecast
-    forecast = chronos.predict(
+    forecast = _predict_torch(chronos, 
         context=context,
         prediction_length=horizon,
         num_samples=100,  # For uncertainty estimation
