@@ -1,7 +1,0 @@
-pandas
-matplotlib
-torch
-gluonts
-uni2ts
-pyyaml
-pytest

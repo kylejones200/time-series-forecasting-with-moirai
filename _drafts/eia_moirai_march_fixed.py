@@ -1,14 +1,13 @@
-import signalplot
+from dataclasses import dataclass
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from pathlib import Path
-from dataclasses import dataclass
+import signalplot
 
 np.random.seed(42)
-signalplot.apply(font_family='serif')
-
-
+signalplot.apply(font_family="serif")
 
 
 @dataclass
@@ -30,8 +29,8 @@ def load_series(cfg: Config) -> pd.Series:
 
 
 def main(plot: bool = False):
-    from uni2ts.model.moirai import MoiraiModule, MoiraiForecast
     from gluonts.dataset.common import ListDataset
+    from uni2ts.model.moirai import MoiraiForecast, MoiraiModule
 
     cfg = Config()
     y = load_series(cfg)
