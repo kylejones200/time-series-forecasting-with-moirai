@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 # Set random seeds
-np.random.seed(42)
 try:
     import tensorflow as tf
     tf.random.set_seed(42)
@@ -251,6 +250,7 @@ logger.info(f"Moirai forecast range: {moirai_results['forecast'].min():.2f} to {
 
 # Code block 5
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+np.random.seed(42)
 
 def calculate_metrics(actual, predicted):
     """Calculate forecasting metrics"""

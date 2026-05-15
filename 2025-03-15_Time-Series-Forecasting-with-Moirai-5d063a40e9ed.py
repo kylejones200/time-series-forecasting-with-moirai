@@ -70,7 +70,6 @@ plot_single(
 plt.show()
 
 
-np.random.seed(42)
 signalplot.apply(font_family='serif')
 
 
@@ -93,6 +92,7 @@ def load_series(cfg: Config) -> pd.Series:
 
 
 def main(plot: bool = False):
+    np.random.seed(42)
     from uni2ts.model.moirai import MoiraiModule, MoiraiForecast
     from gluonts.dataset.common import ListDataset
 
