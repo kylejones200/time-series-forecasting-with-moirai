@@ -44,3 +44,11 @@ Moirai is a foundation model for time series forecasting:
 - Model downloads pre-trained weights on first run (requires internet).
 - GPU recommended for faster inference but not required.
 - Prediction length should match test_size for proper evaluation.
+
+## Disclaimer
+
+Educational/demo code only. Not financial, safety, or engineering advice. Use at your own risk. Verify results independently before any production or operational use.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

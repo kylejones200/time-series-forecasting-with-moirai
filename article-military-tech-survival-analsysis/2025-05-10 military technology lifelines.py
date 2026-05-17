@@ -2,73 +2,11 @@
 
 Magics and shell lines are commented out. Run with a normal Python interpreter."""
 
-
-# --- code cell ---
-
-# !pip install lifelines  # Jupyter-only
-
-
-# --- code cell ---
-
-import pandas as pd
-
-df = pd.read_csv("cow_arms_tech_long.csv")
-df = df[df["use"] == 1].copy()
-df = df.sort_values(["ccode", "techname", "year"])
-
-# Detect start of each new spell of use
-df["used_shift"] = df.groupby(["ccode", "techname"])["use"].shift(1, fill_value=0)
-df["new_spell"] = (df["use"] == 1) & (df["used_shift"] != 1)
-df["spell_id"] = df.groupby(["ccode", "techname"])["new_spell"].cumsum()
-
-# Collapse to spells (start to end)
-spells = (
-    df.groupby(["ccode", "techname", "techtype", "spell_id"])
-    .agg(start_year=("year", "min"), end_year=("year", "max"))
-    .reset_index()
-)
-
-spells["duration_years"] = spells["end_year"] - spells["start_year"] + 1
-spells["event_observed"] = (spells["end_year"] < 2023).astype(int)
-
 import matplotlib.pyplot as plt
-from lifelines import KaplanMeierFitter
-
-kmf = KaplanMeierFitter()
-top_types = spells["techtype"].value_counts().head(5).index
-
-plt.figure(figsize=(12, 7))
-for tech in top_types:
-    subset = spells[spells["techtype"] == tech]
-    kmf.fit(
-        subset["duration_years"], event_observed=subset["event_observed"], label=tech
-    )
-    kmf.plot_survival_function(ci_show=False)
-
-plt.title("Survival by Technology Type")
-plt.xlabel("Years of Use")
-plt.ylabel("Survival Probability")
-plt.xlim(0, 50)
-plt.yticks([0.25, 0.5, 0.75])
-plt.axhline(0.5, color="gray", linestyle="--")
-plt.tight_layout()
-plt.show()
-
-subset = spells[spells["techtype"].isin(["Fighter aircraft", "Small arms"])].copy()
-subset["is_fighter"] = (subset["techtype"] == "Fighter aircraft").astype(int)
-
-from lifelines import CoxPHFitter
-
-cph = CoxPHFitter()
-cph.fit(
-    subset[["duration_years", "event_observed", "is_fighter"]],
-    duration_col="duration_years",
-    event_col="event_observed",
-)
-cph.print_summary()
+import pandas as pd
+from lifelines import CoxPHFitter, KaplanMeierFitter
 
 
-# Map COW ccode values to continents
 def get_continent(ccode):
     if ccode in [
         402,
@@ -173,17 +111,14 @@ def get_continent(ccode):
         return "Other"
 
 
-
 def main():
     small_arms = spells[spells["techtype"] == "Small arms"].copy()
     small_arms["continent"] = small_arms["ccode"].apply(get_continent)
-
     plt.figure(figsize=(12, 7))
     for region in small_arms["continent"].unique():
         subset = small_arms[small_arms["continent"] == region]
         kmf.fit(subset["duration_years"], subset["event_observed"], label=region)
         kmf.plot_survival_function(ci_show=True)
-
     plt.title("Small Arms Survival by Continent")
     plt.xlabel("Years of Use")
     plt.ylabel("Survival Probability")
@@ -192,7 +127,6 @@ def main():
     plt.axhline(0.5, color="gray", linestyle="--")
     plt.tight_layout()
     plt.show()
-
     from lifelines.statistics import logrank_test
 
     spells["era"] = pd.cut(
@@ -200,10 +134,8 @@ def main():
         bins=[1823, 1873, 1923, 1973, 2023],
         labels=["1823–1873", "1873–1923", "1923–1973", "1973–2023"],
     )
-
     group1 = spells[spells["era"] == "1823–1873"]
     group2 = spells[spells["era"] == "1973–2023"]
-
     results = logrank_test(
         group1["duration_years"],
         group2["duration_years"],
@@ -211,87 +143,59 @@ def main():
         event_observed_B=group2["event_observed"],
     )
     print(f"Chi² = {results.test_statistic:.2f}, p = {results.p_value:.4f}")
-
-
-    # --- code cell ---
-
     import matplotlib.pyplot as plt
     from lifelines import KaplanMeierFitter
 
     kmf = KaplanMeierFitter()
     top_types = spells["techtype"].value_counts().head(5).index
-
     plt.figure(figsize=(12, 7))
     for tech in top_types:
         subset = spells[spells["techtype"] == tech]
         kmf.fit(
-            subset["duration_years"], event_observed=subset["event_observed"], label=tech
+            subset["duration_years"],
+            event_observed=subset["event_observed"],
+            label=tech,
         )
         kmf.plot_survival_function(ci_show=False)
-
     plt.title(
         "Probability that Military Tech is still in use X years after introduction (by country)"
     )
-
-
     plt.xlim(0, 50)
     plt.yticks([0.25, 0.5, 0.75])
     plt.axhline(0.5, color="gray", linestyle="--")
-
-    # Remove top and right spines
     plt.gca().spines["right"].set_visible(False)
     plt.gca().spines["top"].set_visible(False)
-
-    # Remove legend box
     plt.legend(frameon=False)
-
     plt.tight_layout()
     plt.savefig("survival_plot.png", dpi=300)
     plt.show()
-
-
-    # --- code cell ---
-
     import matplotlib.pyplot as plt
     import numpy as np
     import pandas as pd
     from lifelines import KaplanMeierFitter
     from lifelines.statistics import logrank_test
 
-    # Load dataset
     df = pd.read_csv("cow_arms_tech_long.csv")
-
-    # Filter for active use spells
     df = df[df["use"] == 1].copy()
     df = df.sort_values(["ccode", "techname", "year"])
     df["used_shift"] = df.groupby(["ccode", "techname"])["use"].shift(1, fill_value=0)
     df["new_spell"] = (df["use"] == 1) & (df["used_shift"] != 1)
     df["spell_id"] = df.groupby(["ccode", "techname"])["new_spell"].cumsum()
-
-    # Collapse to spells
     spells = (
         df.groupby(["ccode", "techname", "spell_id"])
         .agg(start_year=("year", "min"), end_year=("year", "max"))
         .reset_index()
     )
-
     spells["duration_years"] = spells["end_year"] - spells["start_year"] + 1
     spells["event_observed"] = (spells["end_year"] < 2023).astype(int)
-
-    # Filter for United States
     us_spells = spells[spells["ccode"] == 2].copy()
-
-    # Assign 50-year period bins
     bins = [1823, 1873, 1923, 1973, 2023]
     labels = ["1823–1873", "1873–1923", "1923–1973", "1973–2023"]
     us_spells["period"] = pd.cut(
         us_spells["start_year"], bins=bins, labels=labels, right=False
     )
-
-    # Plot Kaplan-Meier survival curves
     kmf = KaplanMeierFitter()
     plt.figure(figsize=(10, 6))
-
     for period in labels:
         group = us_spells[us_spells["period"] == period]
         if not group.empty:
@@ -301,7 +205,6 @@ def main():
                 label=period,
             )
             kmf.plot_survival_function(ci_show=False)
-
     plt.title("U.S. Military Technology Survival by Historical Period")
     plt.xlabel("Years of Use")
     plt.ylabel("Survival Probability")
@@ -312,14 +215,8 @@ def main():
     plt.legend(title="Period", frameon=False)
     plt.tight_layout()
     plt.show()
-
-
-    # --- code cell ---
-
-    # Run pairwise log-rank tests
     period_groups = {label: us_spells[us_spells["period"] == label] for label in labels}
     logrank_results = []
-
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
             g1 = period_groups[labels[i]]
@@ -341,37 +238,26 @@ def main():
                     else float("inf"),
                 }
             )
-
     logrank_df = pd.DataFrame(logrank_results)
     print(logrank_df)
-
-
-    # --- code cell ---
-
     import matplotlib.pyplot as plt
     import pandas as pd
     from lifelines import CoxPHFitter, KaplanMeierFitter
     from lifelines.statistics import logrank_test
 
-    # Load and preprocess the dataset
     df = pd.read_csv("cow_arms_tech_long.csv")
     df = df[df["use"] == 1].copy()
     df = df.sort_values(["ccode", "techname", "year"])
     df["used_shift"] = df.groupby(["ccode", "techname"])["use"].shift(1, fill_value=0)
     df["new_spell"] = (df["use"] == 1) & (df["used_shift"] != 1)
     df["spell_id"] = df.groupby(["ccode", "techname"])["new_spell"].cumsum()
-
-    # Collapse to spells
     spells = (
         df.groupby(["ccode", "techname", "techtype", "spell_id"])
         .agg(start_year=("year", "min"), end_year=("year", "max"))
         .reset_index()
     )
-
     spells["duration_years"] = spells["end_year"] - spells["start_year"] + 1
     spells["event_observed"] = (spells["end_year"] < 2023).astype(int)
-
-    # Define NATO and Africa by ccode
     nato_ccodes = [
         2,
         20,
@@ -415,29 +301,23 @@ def main():
         482,
         490,
     ]
-
-    # Subset to small arms only and label group
     small_arms = spells[spells["techtype"] == "Small arms"].copy()
     small_arms["region"] = small_arms["ccode"].apply(
         lambda x: (
-            "NATO" if x in nato_ccodes else ("Africa" if x in africa_ccodes else "Other")
+            "NATO" if x in nato_ccodes else "Africa" if x in africa_ccodes else "Other"
         )
     )
-
-    # Filter to only NATO and Africa
     subset = small_arms[small_arms["region"].isin(["NATO", "Africa"])].copy()
-
-    # Kaplan-Meier Plot
     plt.figure(figsize=(10, 6))
     kmf = KaplanMeierFitter()
-
     for region in ["NATO", "Africa"]:
         group = subset[subset["region"] == region]
         kmf.fit(
-            group["duration_years"], event_observed=group["event_observed"], label=region
+            group["duration_years"],
+            event_observed=group["event_observed"],
+            label=region,
         )
         kmf.plot_survival_function(ci_show=False)
-
     plt.title("Probability of Small Arms Still in Use: NATO vs Africa")
     plt.xlabel("Years of Use")
     plt.xlim(0, 50)
@@ -446,17 +326,11 @@ def main():
     plt.grid(False)
     plt.legend(frameon=False)
     plt.tight_layout()
-    # Remove top and right spines
     plt.gca().spines["right"].set_visible(False)
     plt.gca().spines["top"].set_visible(False)
-
     plt.savefig("small_arms_nato_africa_km.png")
     plt.close()
-
-    # Encode binary variable for Cox model
     subset["is_nato"] = (subset["region"] == "NATO").astype(int)
-
-    # Cox Proportional Hazards Model
     cph = CoxPHFitter()
     cph.fit(
         subset[["duration_years", "event_observed", "is_nato"]],
@@ -464,8 +338,6 @@ def main():
         event_col="event_observed",
     )
     summary = cph.summary
-
-    # Log-rank test
     nato = subset[subset["region"] == "NATO"]
     africa = subset[subset["region"] == "Africa"]
     logrank = logrank_test(
@@ -474,41 +346,26 @@ def main():
         event_observed_A=nato["event_observed"],
         event_observed_B=africa["event_observed"],
     )
-
     summary_df = summary.reset_index().rename(columns={"index": "Variable"})
     summary_df["logrank_p"] = logrank.p_value
     summary_df["logrank_chi2"] = logrank.test_statistic
-
-
-    # --- code cell ---
-
     summary_df
-
-
-    # --- code cell ---
-
     import pandas as pd
     from lifelines import KaplanMeierFitter
 
-    # Load and preprocess
     df = pd.read_csv("cow_arms_tech_long.csv")
     df = df[df["use"] == 1].copy()
     df = df.sort_values(["ccode", "techname", "year"])
     df["used_shift"] = df.groupby(["ccode", "techname"])["use"].shift(1, fill_value=0)
     df["new_spell"] = (df["use"] == 1) & (df["used_shift"] != 1)
     df["spell_id"] = df.groupby(["ccode", "techname"])["new_spell"].cumsum()
-
-    # Summarize spells
     spells = (
         df.groupby(["ccode", "techname", "techtype", "spell_id"])
         .agg(start_year=("year", "min"), end_year=("year", "max"))
         .reset_index()
     )
-
     spells["duration_years"] = spells["end_year"] - spells["start_year"] + 1
     spells["event_observed"] = (spells["end_year"] < 2023).astype(int)
-
-    # NATO and Africa ccodes
     nato_ccodes = [
         2,
         20,
@@ -552,28 +409,18 @@ def main():
         482,
         490,
     ]
-
-    # Filter small arms and assign regions
     small_arms = spells[spells["techtype"] == "Small arms"].copy()
     small_arms["region"] = small_arms["ccode"].apply(
         lambda x: (
-            "NATO" if x in nato_ccodes else ("Africa" if x in africa_ccodes else "Other")
+            "NATO" if x in nato_ccodes else "Africa" if x in africa_ccodes else "Other"
         )
     )
-
-    # Compute median survival
     kmf = KaplanMeierFitter()
-
     for region in ["NATO", "Africa"]:
         subset = small_arms[small_arms["region"] == region]
         kmf.fit(subset["duration_years"], event_observed=subset["event_observed"])
         median = kmf.median_survival_time_
         print(f"{region} median survival time: {median:.2f} years")
-
-
-    # --- code cell ---
-
-    # Extend region mapping to include Europe
     europe_ccodes = [
         200,
         205,
@@ -599,27 +446,95 @@ def main():
         385,
         390,
     ]
-
-    # Add European region label
     small_arms["region"] = small_arms["ccode"].apply(
         lambda x: (
             "NATO"
             if x in nato_ccodes
-            else (
-                "Africa"
-                if x in africa_ccodes
-                else ("Europe" if x in europe_ccodes else "Other")
-            )
+            else "Africa"
+            if x in africa_ccodes
+            else "Europe"
+            if x in europe_ccodes
+            else "Other"
         )
     )
-
-    # Compute Kaplan-Meier and median survival for Europe
     kmf = KaplanMeierFitter()
     europe_subset = small_arms[small_arms["region"] == "Europe"]
-    kmf.fit(europe_subset["duration_years"], event_observed=europe_subset["event_observed"])
+    kmf.fit(
+        europe_subset["duration_years"], event_observed=europe_subset["event_observed"]
+    )
     median = kmf.median_survival_time_
-
     print(f"Europe median survival time: {median:.2f} years")
+
+
+def main() -> None:
+    df = pd.read_csv("cow_arms_tech_long.csv")
+
+    df = df[df["use"] == 1].copy()
+
+    df = df.sort_values(["ccode", "techname", "year"])
+
+    df["used_shift"] = df.groupby(["ccode", "techname"])["use"].shift(1, fill_value=0)
+
+    df["new_spell"] = (df["use"] == 1) & (df["used_shift"] != 1)
+
+    df["spell_id"] = df.groupby(["ccode", "techname"])["new_spell"].cumsum()
+
+    spells = (
+        df.groupby(["ccode", "techname", "techtype", "spell_id"])
+        .agg(start_year=("year", "min"), end_year=("year", "max"))
+        .reset_index()
+    )
+
+    spells["duration_years"] = spells["end_year"] - spells["start_year"] + 1
+
+    spells["event_observed"] = (spells["end_year"] < 2023).astype(int)
+
+    kmf = KaplanMeierFitter()
+
+    top_types = spells["techtype"].value_counts().head(5).index
+
+    plt.figure(figsize=(12, 7))
+
+    for tech in top_types:
+        subset = spells[spells["techtype"] == tech]
+        kmf.fit(
+            subset["duration_years"],
+            event_observed=subset["event_observed"],
+            label=tech,
+        )
+        kmf.plot_survival_function(ci_show=False)
+
+    plt.title("Survival by Technology Type")
+
+    plt.xlabel("Years of Use")
+
+    plt.ylabel("Survival Probability")
+
+    plt.xlim(0, 50)
+
+    plt.yticks([0.25, 0.5, 0.75])
+
+    plt.axhline(0.5, color="gray", linestyle="--")
+
+    plt.tight_layout()
+
+    plt.show()
+
+    subset = spells[spells["techtype"].isin(["Fighter aircraft", "Small arms"])].copy()
+
+    subset["is_fighter"] = (subset["techtype"] == "Fighter aircraft").astype(int)
+
+    cph = CoxPHFitter()
+
+    cph.fit(
+        subset[["duration_years", "event_observed", "is_fighter"]],
+        duration_col="duration_years",
+        event_col="event_observed",
+    )
+
+    cph.print_summary()
+
+    main()
 
 
 if __name__ == "__main__":
