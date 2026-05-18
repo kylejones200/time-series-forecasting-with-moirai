@@ -1,9 +1,7 @@
 """Core functions for Moirai time series forecasting."""
 from __future__ import annotations
-
 from pathlib import Path
 from typing import Any
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -11,39 +9,20 @@ from gluonts.dataset.pandas import PandasDataset
 from gluonts.dataset.split import split
 from uni2ts.model.moirai import MoiraiForecast, MoiraiModule
 
-
-def plot_single(
-    inp: Any,
-    label: Any,
-    forecast: Any,
-    *,
-    context_length: int,
-    name: str,
-    show_label: bool = True,
-) -> None:
+def plot_single(inp: Any, label: Any, forecast: Any, *, context_length: int, name: str, show_label: bool=True) -> None:
     """Plot one forecast window (context + label + forecast)."""
     context = np.asarray(inp)[-context_length:]
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(range(len(context)), context, label="context", color="#4A90A4")
+    ax.plot(range(len(context)), context, label='context', color='#4A90A4')
     if show_label and label is not None:
         label_arr = np.asarray(label)
         offset = len(context)
-        ax.plot(
-            range(offset, offset + len(label_arr)),
-            label_arr,
-            label="label",
-            color="#444444",
-        )
-    forecast_arr = np.asarray(getattr(forecast, "mean", forecast))
+        ax.plot(range(offset, offset + len(label_arr)), label_arr, label='label', color='#444444')
+    forecast_arr = np.asarray(getattr(forecast, 'mean', forecast))
     offset = len(context) + (len(np.asarray(label)) if show_label and label is not None else 0)
-    ax.plot(
-        range(offset, offset + len(forecast_arr)),
-        forecast_arr,
-        label="forecast",
-        color="#D4A574",
-    )
+    ax.plot(range(offset, offset + len(forecast_arr)), forecast_arr, label='forecast', color='#D4A574')
     ax.set_title(name)
-    ax.legend(loc="best")
+    ax.legend(loc='best')
 
 def load_data(data_path: Path, date_column: str='Date', value_column: str='ERCOT', freq: str='h') -> pd.DataFrame:
     """Load and prepare time series data."""
