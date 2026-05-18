@@ -1,15 +1,20 @@
 import logging
-
-import signalplot
-
-logger = logging.getLogger(__name__)
-
-
+import time
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import signalplot
+import torch
+from chronos import ChronosPipeline
+from moirai import MoiraiForecaster
+from nixtlats import TimeGPT
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+
+logger = logging.getLogger(__name__)
+
+
 
 signalplot.apply(font_family="serif")
 
@@ -47,9 +52,7 @@ logger.info(
 
 # Install: pip install nixtlats
 
-import time
 
-from nixtlats import TimeGPT
 
 # Initialize TimeGPT (requires API key)
 # Get key from: https://nixtla.io/
@@ -62,7 +65,6 @@ from nixtlats import TimeGPT
 def forecast_timegpt(ts_data, horizon=24, api_key=None):
     """
     Forecast using TimeGPT API.
-
     Note: Requires API key from nixtla.io
     """
     if api_key is None:
@@ -70,21 +72,16 @@ def forecast_timegpt(ts_data, horizon=24, api_key=None):
         return None
 
     timegpt = TimeGPT(token=api_key)
-
     # Prepare data in required format
     df_prepared = pd.DataFrame({"ds": ts_data.index, "y": ts_data.values})
-
     start_time = time.time()
-
     # Forecast with prediction intervals
     forecast = timegpt.forecast(
         df=df_prepared,
         h=horizon,
         level=[80, 95],  # 80% and 95% prediction intervals
     )
-
     inference_time = time.time() - start_time
-
     return {
         "forecast": forecast["TimeGPT"].values,
         "lower_80": forecast["TimeGPT-lo-80"].values
@@ -103,46 +100,36 @@ def forecast_timegpt(ts_data, horizon=24, api_key=None):
 
 # Install: pip install chronos-forecasting
 
-import torch
-from chronos import ChronosPipeline
 
 
 def forecast_chronos(ts_data, horizon=24, model_size="tiny"):
     """
     Forecast using Chronos.
-
     Model sizes: 'tiny', 'mini', 'small', 'base', 'large'
     """
     # Load pretrained model
     model_name = f"amazon/chronos-t5-{model_size}"
     logger.info(f"Loading Chronos model: {model_name}")
-
     chronos = ChronosPipeline.from_pretrained(
         model_name,
         device_map="cpu",  # or "cuda" for GPU
         torch_dtype=torch.float32,
     )
-
     # Prepare context (last portion of training data)
     context_length = min(512, len(ts_data))
     context = torch.tensor(ts_data.values[-context_length:], dtype=torch.float32)
-
     start_time = time.time()
-
     # Forecast
     forecast = chronos.predict(
         context=context,
         prediction_length=horizon,
         num_samples=100,  # For uncertainty estimation
     )
-
     inference_time = time.time() - start_time
-
     # Extract median forecast and intervals
     forecast_median = forecast[0].median(dim=0).values.numpy()
     forecast_lower = forecast[0].quantile(0.1, dim=0).values.numpy()
     forecast_upper = forecast[0].quantile(0.9, dim=0).values.numpy()
-
     return {
         "forecast": forecast_median,
         "lower": forecast_lower,
@@ -161,41 +148,32 @@ logger.info(
 
 # Install: pip install moirai
 
-from moirai import MoiraiForecaster
 
 
 def forecast_moirai(ts_data, horizon=24, model_size="base"):
     """
     Forecast using Moirai.
-
     Model sizes: 'small', 'base', 'large'
     """
     # Load pretrained model
     model_name = f"Salesforce/moirai-1.0-R-{model_size}"
     logger.info(f"Loading Moirai model: {model_name}")
-
     moirai = MoiraiForecaster.from_pretrained(model_name)
-
     # Prepare context
     context_length = min(512, len(ts_data))
     context = ts_data.values[-context_length:]
-
     start_time = time.time()
-
     # Forecast
     forecast = moirai.forecast(
         past_data=context,
         horizon=horizon,
         num_samples=100,  # For uncertainty
     )
-
     inference_time = time.time() - start_time
-
     # Extract statistics
     forecast_median = np.median(forecast, axis=0)
     forecast_lower = np.percentile(forecast, 10, axis=0)
     forecast_upper = np.percentile(forecast, 90, axis=0)
-
     return {
         "forecast": forecast_median,
         "lower": forecast_lower,
@@ -212,7 +190,6 @@ logger.info(
     f"Moirai forecast range: {moirai_results['forecast'].min():.2f} to {moirai_results['forecast'].max():.2f}"
 )
 
-from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 
 def calculate_metrics(actual, predicted):

@@ -29,21 +29,13 @@ def load_series(cfg: Config) -> pd.Series:
 
 def main() -> None:
     cfg = Config()
-
     y = load_series(cfg)
-
     end_2024 = pd.Timestamp("2024-12-01")
-
     jan_2025 = pd.Timestamp("2025-01-01")
-
     aug_2025 = pd.Timestamp("2025-08-01")
-
     y_train = y.loc[:end_2024]
-
     y_act = y.loc[jan_2025:aug_2025]
-
     module = MoiraiModule.from_pretrained(cfg.model_id)
-
     model = MoiraiForecast(
         prediction_length=cfg.horizon,
         target_dim=1,
@@ -53,19 +45,13 @@ def main() -> None:
         module=module,
         num_samples=100,
     )
-
     predictor = model.create_predictor(batch_size=1, device="cpu")
-
     start_ts = y_train.index[0]
-
     dataset = ListDataset(
         [{"target": y_train.values.astype(np.float32), "start": start_ts}], freq="M"
     )
-
     it = predictor.predict(dataset)
-
     fc_mean = None
-
     for f in it:
         try:
             fc_mean = f.mean
@@ -74,13 +60,9 @@ def main() -> None:
         break
 
     dates = pd.period_range("2025-01", "2025-08", freq="M").to_timestamp()
-
     fc = pd.Series(np.asarray(fc_mean).reshape(-1)[: cfg.horizon], index=dates)
-
     start_2024 = pd.Timestamp("2024-01-01")
-
     y_hist = y.loc[start_2024:end_2024]
-
     if plot:
         fig, ax = plt.subplots(figsize=(10, 5))
         ax.plot(y_hist.index, y_hist.values, color="#888888", lw=1.5)

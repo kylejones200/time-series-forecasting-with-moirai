@@ -24,7 +24,7 @@ logging.basicConfig(
 )
 
 
-def load_config(config_path: Path = None) -> dict:
+def load_config(config_path: Path | None = None) -> dict:
     """Load configuration from YAML file."""
     if config_path is None:
         config_path = Path(__file__).parent / "config.yaml"
@@ -43,7 +43,6 @@ def main():
         "--output-dir", type=Path, default=None, help="Output directory for plots"
     )
     args = parser.parse_args()
-
     config = load_config(args.config)
     output_dir = (
         Path(args.output_dir)
@@ -51,22 +50,17 @@ def main():
         else Path(config["output"]["figures_dir"])
     )
     output_dir.mkdir(exist_ok=True)
-
     data_path = args.data_path if args.data_path else Path(config["data"]["source"])
     if not data_path.exists():
         raise FileNotFoundError(f"Data file not found: {data_path}")
-
         df = load_data(
             data_path,
             config["data"]["date_column"],
             config["data"]["value_column"],
             config["data"]["frequency"],
         )
-
         dataset = create_dataset(df, config["data"]["value_column"])
-
         train, test_data = split_dataset(dataset, config["test"]["test_size"])
-
         model = create_moirai_model(
             dataset,
             config["model"]["size"],
@@ -75,9 +69,7 @@ def main():
             config["model"]["patch_size"],
             config["model"]["num_samples"],
         )
-
         forecasts = generate_forecasts(model, test_data, config["model"]["batch_size"])
-
         save_forecast_plot(
             test_data,
             forecasts,

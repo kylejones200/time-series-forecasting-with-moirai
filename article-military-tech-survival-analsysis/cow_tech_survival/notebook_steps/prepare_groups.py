@@ -1,23 +1,16 @@
 """Notebook steps (auto-split)."""
 
-from lifelines import CoxPHFitter
-from lifelines import KaplanMeierFitter
-from lifelines.statistics import logrank_test
-import itertools
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+from lifelines.statistics import logrank_test
+
 
 def prepare_groups() -> None:
-    from lifelines.statistics import logrank_test
-
     # Prepare groups
     usa = nato_spells[nato_spells["nato_group"] == "USA"]
     uk = nato_spells[nato_spells["nato_group"] == "UK"]
     canada = nato_spells[nato_spells["nato_group"] == "Canada"]
     france = nato_spells[nato_spells["nato_group"] == "France"]
     other_nato = nato_spells[nato_spells["nato_group"] == "Other NATO"]
-
     # Define test pairs
     comparisons = {
         "USA vs UK": (usa, uk),
@@ -25,7 +18,6 @@ def prepare_groups() -> None:
         "USA vs France": (usa, france),
         "USA vs Other NATO": (usa, other_nato),
     }
-
     # Run tests
     for name, (a, b) in comparisons.items():
         result = logrank_test(
@@ -39,4 +31,3 @@ def prepare_groups() -> None:
             f"Chi² = {result.test_statistic:.4f}, p = {result.p_value:.4f}, "
             f"-log2(p) = {-np.log2(result.p_value):.2f}\n"
         )
-

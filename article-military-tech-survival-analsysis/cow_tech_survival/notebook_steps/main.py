@@ -1,12 +1,5 @@
 """Notebook steps (auto-split)."""
 
-from lifelines import CoxPHFitter
-from lifelines import KaplanMeierFitter
-from lifelines.statistics import logrank_test
-import itertools
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 
 def main() -> None:
     notebook_step_002()
@@ -50,4 +43,3 @@ def main() -> None:
     prepare_the_data_for_cox_proportional_hazards_mo()
     notebook_step_042()
     filter_the_spells_to_only_small_arms_and_fighter()
-
