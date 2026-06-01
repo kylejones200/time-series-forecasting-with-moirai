@@ -42,8 +42,7 @@ def re() -> None:
             return "1916–1940"
         elif row["start_year"] <= 1991:
             return "1945–1991"
-        else:
-            return "1992+"
+        return "1992+"
 
     spell_df["us_period"] = spell_df.apply(label_us_period, axis=1)
     us_spells = spell_df[spell_df["us_period"].notna()].copy()

@@ -12,5 +12,4 @@ def get_continent(ccode):
         return "Americas"
     elif ccode in middle_east_codes:
         return "Middle East"
-    else:
-        return "Other"
+    return "Other"

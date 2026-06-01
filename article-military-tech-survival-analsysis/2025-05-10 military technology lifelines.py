@@ -163,8 +163,7 @@ def detect_start_of_each_new_spell_of_use() -> None:
             return "Americas"
         elif ccode in [630, 640, 645, 651, 663, 666, 670, 678, 680]:
             return "Middle East"
-        else:
-            return "Other"
+        return "Other"
 
     small_arms = spells[spells["techtype"] == "Small arms"].copy()
     small_arms["continent"] = small_arms["ccode"].apply(get_continent)

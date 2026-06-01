@@ -8,5 +8,4 @@ def label_us_time_bin(row):
         return "1923–1973"
     elif 1973 <= row["start_year"] <= 2023:
         return "1973–2023"
-    else:
-        return None
+    return None

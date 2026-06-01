@@ -10,5 +10,4 @@ def label_us_period(row):
         return "1916–1940"
     elif row["start_year"] <= 1991:
         return "1945–1991"
-    else:
-        return "1992+"
+    return "1992+"

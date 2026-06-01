@@ -12,5 +12,4 @@ def label_nato_group(ccode):
         return "UK"
     elif ccode in nato_ccodes:
         return "Other NATO"
-    else:
-        return None
+    return None

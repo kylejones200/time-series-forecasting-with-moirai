@@ -8,5 +8,4 @@ def assign_group(ccode):
         return "Russia/USSR"
     elif ccode in nato_ccodes:
         return "NATO"
-    else:
-        return None
+    return None

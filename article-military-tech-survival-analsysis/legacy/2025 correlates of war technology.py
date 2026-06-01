@@ -18,8 +18,7 @@ def assign_group(ccode):
         return "Russia/USSR"
     elif ccode in nato_ccodes:
         return "NATO"
-    else:
-        return None
+    return None
 
 
 def get_continent(ccode):
@@ -33,8 +32,7 @@ def get_continent(ccode):
         return "Americas"
     elif ccode in middle_east_codes:
         return "Middle East"
-    else:
-        return "Other"
+    return "Other"
 
 
 def label_nato_group(ccode):
@@ -48,8 +46,7 @@ def label_nato_group(ccode):
         return "UK"
     elif ccode in nato_ccodes:
         return "Other NATO"
-    else:
-        return None
+    return None
 
 
 def label_us_period(row):
@@ -61,8 +58,7 @@ def label_us_period(row):
         return "1916–1940"
     elif row["start_year"] <= 1991:
         return "1945–1991"
-    else:
-        return "1992+"
+    return "1992+"
 
 
 def label_us_time_bin(row):
@@ -72,8 +68,7 @@ def label_us_time_bin(row):
         return "1923–1973"
     elif 1973 <= row["start_year"] <= 2023:
         return "1973–2023"
-    else:
-        return None
+    return None
 
 
 def notebook_step_002() -> None:
@@ -350,8 +345,7 @@ def re() -> None:
             return "1916–1940"
         elif row["start_year"] <= 1991:
             return "1945–1991"
-        else:
-            return "1992+"
+        return "1992+"
 
     spell_df["us_period"] = spell_df.apply(label_us_period, axis=1)
     us_spells = spell_df[spell_df["us_period"].notna()].copy()
